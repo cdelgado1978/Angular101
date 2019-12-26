@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29609.76
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Angular101", "Angular101\Angular101.csproj", "{5127958D-6253-4B5B-9FB7-50528994B6B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Angular102", "..\Angular102\Angular102.csproj", "{A669532B-A219-4F15-8165-12487A408490}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5127958D-6253-4B5B-9FB7-50528994B6B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5127958D-6253-4B5B-9FB7-50528994B6B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5127958D-6253-4B5B-9FB7-50528994B6B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5127958D-6253-4B5B-9FB7-50528994B6B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A669532B-A219-4F15-8165-12487A408490}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A669532B-A219-4F15-8165-12487A408490}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A669532B-A219-4F15-8165-12487A408490}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A669532B-A219-4F15-8165-12487A408490}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E7E2822E-94A1-4471-937D-952AADE76A6C}
+	EndGlobalSection
+EndGlobal
