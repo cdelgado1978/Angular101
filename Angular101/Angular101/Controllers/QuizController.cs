@@ -14,7 +14,17 @@ namespace Angular101.Controllers
     [ApiController]
     public class QuizController : ControllerBase
     {
-        [HttpGet("Latest/{num}")]
+
+
+
+        #region Attribute-based routing methods
+        /// <summary>
+        /// GET: api/quiz/latest
+        /// Retrieves the {num} latest Quizzes
+        /// </summary>
+        /// <param name="num">the number of quizzes to retrieve</param>
+        /// <returns>the {num} latest Quizzes</returns>
+        [HttpGet("Latest/{num:int?}")]
         public IActionResult Latest(int num = 10)
         {
             var sampleQuizzes = new List<QuizViewModel>();
@@ -43,6 +53,7 @@ namespace Angular101.Controllers
 
             return new JsonResult(sampleQuizzes, serializerSettings: new JsonSerializerOptions() { WriteIndented = true });
         }
+        #endregion
 
         /// <summary>
         /// GET: api/quiz/ByTitle
@@ -73,6 +84,68 @@ namespace Angular101.Controllers
             return new JsonResult(sampleQuizzes.OrderBy(t => Guid.NewGuid()), new JsonSerializerOptions() { WriteIndented = true });
 
         }
+
+
+        #region RESTful conventions methods
+
+        /// <summary>
+        /// GET: api/quiz/{}id
+        /// Retrieves the Quiz with the given {id}
+        /// </summary>
+        /// <param name="id">The ID of an existing Quiz</param>
+        /// <returns>the Quiz with the given {id}</returns>
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
+        {
+            // create a sample quiz to match the given request
+            var v = new QuizViewModel()
+            {
+                Id = id,
+                Title = String.Format("Sample quiz with id {0}", id),
+                Description = "Not a real quiz: it's just a sample!",
+                CreatedDate = DateTime.Now,
+                LastModifiedDate = DateTime.Now
+            };
+            // output the result in JSON format
+            return new JsonResult(
+            v,
+            new JsonSerializerOptions()
+            {
+                WriteIndented = true
+            });
+        }
+
+        /// <summary>
+        /// Adds a new Quiz to the Database
+        /// </summary>
+        /// <param name="m">The QuizViewModel containing the data to insert</param>
+        [HttpPut]
+        public IActionResult Put(QuizViewModel m)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Edit the Quiz with the given {id}
+        /// </summary>
+        /// <param name="m">The QuizViewModel containing the data to update</param>
+        [HttpPost]
+        public IActionResult Post(QuizViewModel m)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Deletes the Quiz with the given {id} from the Database
+        /// </summary>
+        /// <param name="id">The ID of an existing Quiz</param>
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
 
     }
 }
