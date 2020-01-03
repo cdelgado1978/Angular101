@@ -95,6 +95,21 @@ namespace Angular101
                     spa.UseAngularCliServer(npmScript: "start");
                 }
             });
+
+
+            using (var serviceScope = app.ApplicationServices
+                                        .GetRequiredService<IServiceScopeFactory>().CreateScope()) {
+
+                var dbContext = serviceScope.ServiceProvider
+                                        .GetService<ApplicationDbContext>();
+
+                dbContext.Database.Migrate();
+
+                DbSeeder.Seed(dbContext);
+
+            };
+
+                
         }
     }
 }

@@ -36,7 +36,12 @@
               </span> Login
             </a>
           </li>
-          
+          <li class="nav-item" [routerLinkActive]="['link-active']">
+            <a class="nav-link text-dark" [routerLink]="['/quiz/create']">
+              <span class='glyphicon glyphicon-log-in'>
+              </span> Create Quiz
+            </a>
+          </li>
         </ul>
       </div>
     </div>

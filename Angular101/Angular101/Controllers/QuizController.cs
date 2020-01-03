@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Angular101.Data;
 using Angular101.ViewModels;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,8 +16,12 @@ namespace Angular101.Controllers
     [ApiController]
     public class QuizController : ControllerBase
     {
+        private readonly ApplicationDbContext dbContext;
 
-
+        public QuizController(ApplicationDbContext dbContext)
+        {
+            this.dbContext = dbContext;
+        }
 
         #region Attribute-based routing methods
         /// <summary>
@@ -27,31 +33,11 @@ namespace Angular101.Controllers
         [HttpGet("Latest/{num:int?}")]
         public IActionResult Latest(int num = 10)
         {
-            var sampleQuizzes = new List<QuizViewModel>();
+            var latest = dbContext.Quizzes.OrderByDescending(q => q.CreatedDate)
+                        .Take(num)
+                        .ToArray();
 
-            sampleQuizzes.Add(new QuizViewModel()
-            {
-                Id = 1,
-                Title = "Which Shingeki No Kyojin character are you?",
-                Description = "Anime-related personality test",
-                CreatedDate = DateTime.Now,
-                LastModifiedDate = DateTime.Now
-            });
-
-
-            for (int i = 2; i <= num; i++)
-            {
-                sampleQuizzes.Add(new QuizViewModel()
-                {
-                    Id = i,
-                    Title = String.Format("Sample Quiz {0}", i),
-                    Description = "This is a sample quiz",
-                    CreatedDate = DateTime.Now,
-                    LastModifiedDate = DateTime.Now
-                });
-            }
-
-            return new JsonResult(sampleQuizzes, serializerSettings: new JsonSerializerOptions() { WriteIndented = true });
+            return new JsonResult(latest.Adapt<QuizViewModel[]>(), serializerSettings: new JsonSerializerOptions() { WriteIndented = true });
         }
         #endregion
 
@@ -64,9 +50,14 @@ namespace Angular101.Controllers
         [HttpGet("ByTitle/{num:int?}")]
         public IActionResult ByTitle(int num = 10)
         {
-            var sampleQuizzes = ((JsonResult)Latest(num)).Value  as List<QuizViewModel>;
+            //var sampleQuizzes = ((JsonResult)Latest(num)).Value  as List<QuizViewModel>;
 
-            return new JsonResult(sampleQuizzes.OrderBy(t => t.Title), new JsonSerializerOptions() { WriteIndented = true });
+            var byTitle = dbContext.Quizzes.OrderBy(q => q.Title)
+                .Take(num)
+                .ToArray();
+
+
+            return new JsonResult(byTitle.Adapt<QuizViewModel[]>(), new JsonSerializerOptions() { WriteIndented = true });
 
         }
 
@@ -79,9 +70,15 @@ namespace Angular101.Controllers
         [HttpGet("Random/{num:int?}")]
         public IActionResult Random(int num = 10)
         {
-            var sampleQuizzes = ((JsonResult)Latest(num)).Value as List<QuizViewModel>;
+            //var sampleQuizzes = ((JsonResult)Latest(num)).Value as List<QuizViewModel>;
 
-            return new JsonResult(sampleQuizzes.OrderBy(t => Guid.NewGuid()), new JsonSerializerOptions() { WriteIndented = true });
+            var random = dbContext.Quizzes
+                .OrderBy(q => Guid.NewGuid())
+                .Take(num)
+                .ToArray();
+
+
+            return new JsonResult(random.Adapt<QuizViewModel[]>(), new JsonSerializerOptions() { WriteIndented = true });
 
         }
 
@@ -97,18 +94,17 @@ namespace Angular101.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            // create a sample quiz to match the given request
-            var v = new QuizViewModel()
+
+            var quiz = dbContext.Quizzes.FirstOrDefault(i => i.Id == id);
+
+            if (quiz == null)
             {
-                Id = id,
-                Title = String.Format("Sample quiz with id {0}", id),
-                Description = "Not a real quiz: it's just a sample!",
-                CreatedDate = DateTime.Now,
-                LastModifiedDate = DateTime.Now
-            };
-            // output the result in JSON format
+                return NotFound(new { Error = $"Quiz ID {id} has not been found"});
+            }
+
+
             return new JsonResult(
-            v,
+            quiz.Adapt<QuizViewModel>(),
             new JsonSerializerOptions()
             {
                 WriteIndented = true
@@ -118,21 +114,65 @@ namespace Angular101.Controllers
         /// <summary>
         /// Adds a new Quiz to the Database
         /// </summary>
-        /// <param name="m">The QuizViewModel containing the data to insert</param>
+        /// <param name="model">The QuizViewModel containing the data to insert</param>
         [HttpPut]
-        public IActionResult Put(QuizViewModel m)
+        public IActionResult Put([FromBody] QuizViewModel model)
         {
-            throw new NotImplementedException();
+            
+            if (model == null) return new StatusCodeResult(500);
+
+            var quiz = new Quiz() { 
+               Title = model.Title,
+               Description = model.Description,
+               Text = model.Text,
+               Notes = model.Notes
+            };
+
+            quiz.CreatedDate = DateTime.Now;
+            quiz.LastModifiedDate = quiz.CreatedDate;
+
+            quiz.UserId = dbContext.Users.FirstOrDefault(u => u.UserName == "Admin").Id;
+
+            dbContext.Quizzes.Add(quiz);
+
+            dbContext.SaveChanges();
+
+            return new JsonResult(quiz.Adapt<QuizViewModel>(), new JsonSerializerOptions()
+            {
+                WriteIndented = true
+            });
+            
+
         }
 
         /// <summary>
         /// Edit the Quiz with the given {id}
         /// </summary>
-        /// <param name="m">The QuizViewModel containing the data to update</param>
+        /// <param name="model">The QuizViewModel containing the data to update</param>
         [HttpPost]
-        public IActionResult Post(QuizViewModel m)
+        public IActionResult Post([FromBody] QuizViewModel model)
         {
-            throw new NotImplementedException();
+            if (model == null) return new StatusCodeResult(500);
+
+            var quiz = dbContext.Quizzes.FirstOrDefault(q => q.Id == model.Id);
+
+            if (quiz == null)
+            {
+                return NotFound(new { Error = $"Quiz ID {model.Id} has not been found." });
+            }
+
+            quiz.Title = model.Title;
+            quiz.Description = model.Description;
+            quiz.Text = model.Text;
+            quiz.Notes = model.Notes;
+
+            quiz.LastModifiedDate = quiz.CreatedDate;
+
+            dbContext.SaveChanges();
+
+            return new JsonResult(quiz.Adapt<QuizViewModel>(), 
+                   new JsonSerializerOptions() { WriteIndented = true });
+            
         }
 
         /// <summary>
@@ -142,8 +182,25 @@ namespace Angular101.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            throw new NotImplementedException();
+            var quiz = dbContext.Quizzes.FirstOrDefault(i => i.Id == id);
+
+            if (quiz == null)
+            {
+                return NotFound(new
+                {
+                    Error = $"Quiz ID {id} has not been found"
+                });
+            }
+
+            dbContext.Quizzes.Remove(quiz);
+
+            dbContext.SaveChanges();
+
+            return new OkResult();
+
         }
+
+        
 
         #endregion
 
